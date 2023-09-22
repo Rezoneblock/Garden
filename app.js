@@ -1,12 +1,14 @@
 // ЯБЛОКО
 class Apple {
-  constructor(treeId, appleId, newBorn) {
-    this.id = `tree#${treeId+1}_apple#${appleId+1}`; // Идентификатор 
+  constructor(treeId, appleId, newBorn, applesGeneration) {
 
     if (newBorn) { // Возраст
+      this.id = `tree#${treeId+1}_apple#${appleId+1}_gen#${applesGeneration}`; // Идентификатор новорожденного яблока
       this.old = 0; // Только родившееся - 0 
     } else {
+      // this.id = `tree#${treeId+1}_apple#${appleId+1}`; 
       this.old = Math.round(Math.random() * 28); // Изначальное - рандом от 0 до 28 
+      this.id = `tree#${treeId+1}_apple#${appleId+1}`; 
     }
 
     this.color = 'green'; // Цвет
@@ -27,25 +29,49 @@ class Apple {
 
 // ДЕРЕВО
 class Tree {
-  constructor(treeId, initAppleCount) {
+  constructor(treeId, initAppleCount, applesGeneration) {
+    console.log(applesGeneration);
     this.id = `tree#${treeId+1}`; // Идентификатор дерева
     this.apples = Array.apply(null, Array(initAppleCount)).map(function (appleVal, appleIndex) { // Создаём массив с яблоками
-      return new Apple(treeId, appleIndex);
+      return new Apple(treeId, appleIndex, false);
     })
     this.applesOnTreeCounter = this.apples.length; // Обновляем счётчик яблок
     this.createTree(); // Создаём дерево в html
   }
 
+  
   createTree() { // Метод создания дерева в html
     let tree = document.createElement('div'); // Создаём елемент дерева
     tree.classList.add('tree'); // Стили
     tree.setAttribute('data-id', `${this.id}`); // Идентификатор   
-
+    
     let appleCounter = document.createElement('span'); // Создать счётчик яблок
     appleCounter.innerHTML = `Яблок на дереве: ${this.applesOnTreeCounter}`; // Указать текущее кол-во яблок 
-
-    tree.append(appleCounter); // Добавляем счётчик яблок в дерево html
+    
+    let applesWrapper = document.createElement('div'); // Яблоки дерева 
+    applesWrapper.classList.add('apples-wrapper');
+    
+    
+    this.createHtmlApples(applesWrapper);
+    
+    tree.append(appleCounter, applesWrapper); // Добавляем счётчик яблок в дерево html
     document.querySelector('.trees-wrapper').append(tree); // Добавляем дерево в сад html
+  }
+
+
+  createHtmlApples(applesWrapper) {
+    this.apples.forEach(function(apple, appleIndex) {
+      if (!document.querySelector(`[data-id="${apple.id}"]`)) {
+        let appleHtml = document.createElement('div');
+        appleHtml.classList.add('apple');
+        appleHtml.setAttribute('data-id', `${apple.id}`);
+        let appleOld = document.createElement('span');
+        appleOld.classList.add('apple-old');
+        appleOld.innerHTML = `${apple.old}`;
+        appleHtml.append(appleOld);
+        applesWrapper.append(appleHtml);
+      }
+    })
   }
 }
 
@@ -56,17 +82,17 @@ class Garden {
     this.allApplesCount = initApplesCount*initTreesCount; // Устанавливаем изначальное вол-во всех яблок на деревьях
     this.initHtml(initTreesCount, initApplesCount); // Создаём html сад
     this.gardenOld = 0; // Возраст
+    this.applesGeneration = 1; // Генерация яблок по счёту
     this.initTreesCount = initTreesCount; // Изначальное кол-во деревьев
     this.initApplesCount = initApplesCount; // Изначальное кол-во яблок на всех деревьях
     this.trees = Array.apply(null, Array(initTreesCount)).map(function (treeVal, treeIndex) // Создаём массив с деревьями
-      { 
-        return new Tree(treeIndex, initApplesCount); // Возвращаем дерево 
-      });
+    { 
+      return new Tree(treeIndex, initApplesCount); // Возвращаем дерево 
+    });
 
-      
-
-      this.gardenOldHtml = document.querySelector('.old');
-      this.oldUpdate();
+  
+    this.gardenOldHtml = document.querySelector('.old');
+    this.oldUpdate();
   }
 
   initHtml(initTreesCount, initAppleCount) { // Метод создания html сада 
@@ -88,26 +114,34 @@ class Garden {
     let oldCounter = document.createElement('div'); // Возраст сада
     oldCounter.classList.add('old');
 
-    app.append(btnPassDay, treesWrapper, applesCounter, oldCounter); // Совмещаем в html
+    app.append(oldCounter, applesCounter, btnPassDay, treesWrapper); // Совмещаем в html
   }
 
   passDay() { // Метод пропуска суток
     this.trees.map((treeVal, treeIndex, treesArray) => { // Перебираем все деревья
       treeVal.apples.map((appleVal, appleIndex) => { // Перебираем все яблоки на дереве
-        // console.log(appleVal.old);
         appleVal.old++; // Увеличиваем возраст яблока
-        if(appleVal.old == 30) { // Яблоку 30 дней, упало с дерева 
-          appleVal.fall(); // Ставим свойство
-          this.allApplesCount--; // Вычитаем его со списка всех яблок на деревьях
-          treeVal.applesOnTreeCounter--; // Вычитаем его со списка яблок на данном дереве
-          document.querySelector('.apples-counter').innerHTML = `Всего яблок на деревьях: ${this.allApplesCount}`; // html
-          document.querySelector(`[data-id="tree#${treeIndex+1}"]`).querySelector('span').innerHTML = `Яблок на дереве: ${treeVal.applesOnTreeCounter}`; // html
-        }
-        if(appleVal.old == 31) { // Яблоку 31 день - начинает гнить
-          appleVal.rot();
-        }
-        if(appleVal.old == 32) { // Яблоку 32 дня - сгнило, удаляем
-          treeVal.apples.splice(appleIndex, 1); 
+        switch (appleVal.old) {
+          case 30: // На 30 день яблоко падает
+            appleVal.fall(); // Ставим свойство
+
+            this.allApplesCount--; // Вычитаем его со списка всех яблок на деревьях
+            treeVal.applesOnTreeCounter--; // Вычитаем его со списка яблок на данном дереве
+
+            document.querySelector('.apples-counter').innerHTML = `Всего яблок на деревьях: ${this.allApplesCount}`; // html Всего яблок на деревьях
+            document.querySelector(`[data-id="tree#${treeIndex+1}"]`).querySelector('span').innerHTML = `Яблок на дереве: ${treeVal.applesOnTreeCounter}`; // html Яблок на дереве
+
+            break;
+          case 31: // на 31 дне начинает гнить
+            appleVal.rot();
+            break;
+          case 32: // на 32 дне удаляются
+          document.querySelector(`[data-id="${appleVal.id}"]`).remove();
+            treeVal.apples.splice(appleIndex, 1); 
+            break;
+        };
+        if (appleVal.old !== 32) {
+          document.querySelector(`[data-id="${appleVal.id}"]`).querySelector('.apple-old').innerHTML = appleVal.old; // Меняем возраст яблока на дереве html
         }
       })
     })
@@ -119,20 +153,23 @@ class Garden {
     this.gardenOld++; // Увеличиваем возраст сада
     this.gardenOldHtml.innerHTML = `Возраст сада: ${this.gardenOld}`; // Меняем html
     if (this.gardenOld % 30 == 0 && this.gardenOld) {
-      this.createApple(); // Создаём яблоко на 30 дне
+      this.applesGeneration++;
+      this.createApples(); // Создаём яблоко на 30 дне
     }
   }
 
-  createApple() { // Метод создания яблока
+  createApples() { // Метод создания яблока
     this.trees.map((treeVal, treeIndex) => {
       let randomApplesCount = Math.round(Math.random() * 20); // Рандомное количество новых яблок (от 0 до 20);  
-      // console.log(randomApplesCount);
       this.allApplesCount += randomApplesCount; // Увеличиваем общее кол-во яблок; 
       for (let i = 0; i < randomApplesCount; i++) {
-        treeVal.apples.unshift(new Apple(treeIndex, treeVal.apples.length, true)); // добавляем яблоко в массив яблок на дереве
+        treeVal.apples.unshift(new Apple(treeIndex, treeVal.apples.length, true, this.applesGeneration)); // добавляем яблоко в массив яблок на дереве
       }
       treeVal.applesOnTreeCounter += randomApplesCount; // Увеличиваем кол-во яблок на данном дереве 
       document.querySelector(`[data-id="tree#${treeIndex+1}"]`).querySelector('span').innerHTML = `Яблок на дереве: ${treeVal.applesOnTreeCounter}`; // html
+      
+      treeVal.createHtmlApples(document.querySelector(`[data-id="tree#${treeIndex+1}"]`).querySelector('.apples-wrapper'));
+      // console.log(document.querySelector(`[data-id="tree#${treeIndex+1}"]`))
     })
     document.querySelector('.apples-counter').innerHTML = `Всего яблок на деревьях: ${this.allApplesCount}`; // html
   }
