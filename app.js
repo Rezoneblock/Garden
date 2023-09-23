@@ -173,6 +173,7 @@ class Garden {
             break;
           case 31: // на 31 дне начинает гнить
             appleVal.rot(); // Вызываем метод гниения.
+            document.querySelector(`[data-id="${appleVal.id}"]`).querySelector('.apple-old').remove();
             break;
           case 32: // на 32 дне удаляются
             document.querySelector(`[data-id="${appleVal.id}"]`).remove(); // Удаляем яблоко из html
