@@ -219,8 +219,8 @@ var garden = null;
 
 window.onload = function() { 
   document.querySelector('#randomSeed').addEventListener('click', function(event) { // Выбрать рандомное кол-во деревьев и яблок
-    document.querySelector('#treesInitInput').value = Math.round(Math.random() * 30 + 1) // Рандом до 30, вручную можно указать больше (до 100)
-    document.querySelector('#applesInitInput').value = Math.round(Math.random() * 30 + 1) // Рандом до 30, вручную можно указать больше (до 100)
+    document.querySelector('#treesInitInput').value = Math.round(Math.random() * 29 + 1) // Рандом до 30, вручную можно указать больше (до 100)
+    document.querySelector('#applesInitInput').value = Math.round(Math.random() * 29 + 1) // Рандом до 30, вручную можно указать больше (до 100)
   })
   document.querySelector('#createGardenBtn').addEventListener('click', function(event) { // Сгенерировать сад
     let treesInitElem = document.querySelector('#treesInitInput');
