@@ -81,7 +81,6 @@
       align-items: center;
       flex-wrap: nowrap;
       
-      background-image: url('img/redApple.png');
       background-repeat: no-repeat;
       background-position: left 0;
       background-size: 25px 23px;
@@ -97,13 +96,14 @@
   </style>
 </head>
 <body>
-  <div class="create-garden">
+  <form class="create-garden" onsubmit="return false">
     <input type="number" min="1" max="100" id="treesInitInput" placeholder="Количество деревьев">
     <input type="number" min="1" max="100" id="applesInitInput" placeholder="Количество яблок на деревьях">
+    <button id="randomSeed">рандом</button>
     <span>Минимум 1</span>
     <span>Максимум 100</span>
     <button id="createGardenBtn">Создать сад</button>
-  </div>
+  </form>
   <script src="app.js"></script>
   <noscript><p>Включить, пожалуйста, JavaScript.</p></noscript> 
 </body>
