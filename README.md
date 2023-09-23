@@ -1,5 +1,5 @@
 # Garden
-Создайте свой сад - https://rezoneblock.github.io/Garden). 
+Создайте свой сад - https://rezoneblock.github.io/Garden. 
 
 При инициализации сада все яблоки рождаются со случайным возрастом.
 
